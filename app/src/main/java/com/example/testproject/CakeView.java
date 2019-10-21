@@ -1,4 +1,4 @@
-package com.example.testproject.cakeview;
+package com.example.testproject;
 
 import android.content.Context;
 import android.graphics.Bitmap;

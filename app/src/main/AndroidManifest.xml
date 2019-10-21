@@ -11,7 +11,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".sina.SinaActivity"></activity>
+        <activity android:name=".scroller.ScrollerActivity"></activity>
+        <activity android:name=".architecture_components.data_binding.activity.DataBindingActivity" />
+        <activity android:name=".sina.SinaActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,7 +21,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".cakeview.CakeActivity" />
+        <activity android:name=".CakeActivity" />
     </application>
 
 </manifest>

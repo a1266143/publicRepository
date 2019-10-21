@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     >
 
-    <com.example.testproject.cakeview.CakeView
+    <com.example.testproject.CakeView
         android:id="@+id/cakeview"
         android:layout_width="400dp"
         android:layout_height="400dp"
