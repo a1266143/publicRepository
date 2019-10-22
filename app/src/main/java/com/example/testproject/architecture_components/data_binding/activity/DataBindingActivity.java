@@ -8,6 +8,7 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import com.example.testproject.R;
@@ -15,7 +16,6 @@ import com.example.testproject.architecture_components.data_binding.bean.User;
 import com.example.testproject.databinding.ActivityDataBindingBinding;
 
 public class DataBindingActivity extends AppCompatActivity {
-
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -33,10 +33,17 @@ public class DataBindingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityDataBindingBinding binding = DataBindingUtil.setContentView(this,R.layout.activity_data_binding);
-        User user = new User("晓军","李");
+        final ActivityDataBindingBinding binding = DataBindingUtil.setContentView(this,R.layout.activity_data_binding);
+        binding.setName("姓名");
+        User user = new User("晓军","李",27);
         binding.setUser(user);
         getLifecycle().addObserver(new MyObserver());
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                binding.setUser(new User("秋月","庞",25));
+            }
+        },2000);
     }
 
     public class MyObserver implements LifecycleObserver{
@@ -70,8 +77,6 @@ public class DataBindingActivity extends AppCompatActivity {
         public void onPause(){
             Log.e("xiaojun","on_pause");
         }
-
-
 
     }
 }

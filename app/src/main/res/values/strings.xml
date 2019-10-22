@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">TestProject</string>
+    <!-- DataBinding expression's Format-String -->
+    <string name="format_string">This is the person whose name is %s</string>
+    <!-- DataBinding experssion's plural -->
+    <string name="format_string_plural">The age of this person is %d</string>
+    <!-- 中文 -->
+    <string name="chinese">中文</string>
 </resources>

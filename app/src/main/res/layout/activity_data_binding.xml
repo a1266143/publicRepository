@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    >
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
-
         <variable
             name="user"
             type="com.example.testproject.architecture_components.data_binding.bean.User" />
+
+        <variable name="name" type="String" />
     </data>
 
     <LinearLayout
@@ -15,13 +15,33 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/tvFirstName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text='@{user.firstName}' />
+            android:text='@{user.firstName,default=haha}' />
+
+        <TextView
+            android:id="@+id/tvLastName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text='@{user.lastName,default=xixi}' />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text='@{user.lastName}' />
+            android:text='@{@string/format_string(user.lastName+user.firstName)}'
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text='@{@string/format_string_plural(user.age)}'
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text='@{@string/chinese+" with +"}'
+            />
     </LinearLayout>
 </layout>
