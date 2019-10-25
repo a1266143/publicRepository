@@ -28,7 +28,17 @@
         <Button
             style="@style/ButtonStyle"
             android:onClick="scroller"
-            android:text="Scroller"
+            android:text="Scroller" />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="updateView"
+            android:text="UpdateView" />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="waggle"
+            android:text="WaggleView"
             />
 
     </LinearLayout>
