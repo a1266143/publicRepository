@@ -28,4 +28,12 @@ public class UpdateViewActivity extends AppCompatActivity {
         if (percentage >= 1)
             percentage = 0;
     }
+
+    public void stop(View view){
+        updateButton.animateButtonEnd("升级失败",UpdateButton.mDefaultColorFail);
+    }
+
+    public void success(View view){
+        updateButton.animateButtonEnd("升级成功",UpdateButton.mDefaultColorSuccess);
+    }
 }
