@@ -11,7 +11,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".customview.waggleview.WaggleActivity"></activity>
+        <activity android:name=".longpic.LongPicActivity"></activity>
+        <activity android:name=".customview.waggleview.WaggleActivity" />
         <activity android:name=".customview.updateview.UpdateViewActivity" />
         <activity android:name=".scroller.ScrollerActivity" />
         <activity android:name=".architecture_components.data_binding.activity.DataBindingActivity" />
