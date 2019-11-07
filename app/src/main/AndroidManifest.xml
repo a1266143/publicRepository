@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.testproject">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -11,7 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".longpic.LongPicActivity"></activity>
+        <activity android:name=".customview.ruler.RulerActivity"></activity>
+        <activity android:name=".longpic.LongPicActivity" />
         <activity android:name=".customview.waggleview.WaggleActivity" />
         <activity android:name=".customview.updateview.UpdateViewActivity" />
         <activity android:name=".scroller.ScrollerActivity" />
