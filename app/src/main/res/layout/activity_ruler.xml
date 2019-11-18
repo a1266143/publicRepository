@@ -5,11 +5,114 @@
     android:layout_height="match_parent"
     tools:context=".customview.ruler.RulerActivity">
 
-    <com.example.testproject.customview.RulerView
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_centerInParent="true"
-        android:background="#777777"
-        />
+    <LinearLayout
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#222222"
+        >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textSize="24dp"
+                    android:text="频率"
+                    android:textColor="#dddddd"
+                    />
+
+                <com.example.testproject.customview.RulerView
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="#555"
+                    />
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textSize="24dp"
+                    android:text="Gain"
+                    android:textColor="#dddddd"
+                    />
+
+                <com.example.testproject.customview.RulerView
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="#555"
+                    />
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textSize="24dp"
+                    android:text="Freq"
+                    android:textColor="#dddddd"
+                    />
+
+                <com.example.testproject.customview.RulerView
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="#555"
+                    />
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
 
 </RelativeLayout>

@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.example.testproject.architecture_components.data_binding.activity.DataBindingActivity;
+import com.example.testproject.customview.ruler.RulerActivity;
+import com.example.testproject.customview.ruler.RulerActivity2;
+import com.example.testproject.longpic.LongPicActivity;
 import com.example.testproject.customview.updateview.UpdateViewActivity;
 import com.example.testproject.customview.waggleview.WaggleActivity;
 import com.example.testproject.scroller.ScrollerActivity;
@@ -45,6 +48,25 @@ public class MainActivity extends AppCompatActivity {
 
     public void waggle(View view){
         startActivity(newIntent(WaggleActivity.class));
+    }
+
+    public void audioTrack(View view){
+//        AudioTrack audioTrack = new AudioTrack();
+//        AudioFormat.ENCODING_
+    }
+
+    public void bolang(View view){
+        startActivity(newIntent(LongPicActivity.class));
+    }
+
+    public void ruler(View view){ startActivity(newIntent(RulerActivity.class));}
+
+    public void ruler2(View view){
+        startActivity(newIntent(RulerActivity2.class));
+    }
+
+    public void surfaceview(View view){
+        startActivity(newIntent(SurfaceViewActivity.class));
     }
 
     private Intent newIntent(Class dstActivity){

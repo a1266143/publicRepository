@@ -1,5 +1,7 @@
 package com.example.testproject.customview;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -8,7 +10,12 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.Nullable;
 
@@ -31,11 +38,9 @@ public class RulerView extends View {
     private List<String> mListData;//数据集
     private List<Integer> mListIndexOnScreen;//显示在屏幕上的数据集的索引
     private List<Float> mListPositionXOnScreen;//显示在屏幕上的数据集的x轴的位置
+    private List<String> mListTextOnScreen;//显示在屏幕上的数据集字符串
 
     private int mWidthView, mHeightView;
-    private float mWidthText, mHeightText;
-
-    private float mHeightDividing, mHeightDividCenter;
 
     public RulerView(Context context) {
         this(context, null);
@@ -50,15 +55,17 @@ public class RulerView extends View {
         init();
     }
 
+    private int mTextSize = 30;
+
     private void init() {
         mPaintDividing = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintDividing.setStyle(Paint.Style.STROKE);
-        mPaintDividing.setStrokeWidth(6);
-        mPaintDividing.setColor(Color.parseColor("#DDDDDD"));
+        mPaintDividing.setStrokeWidth(5);
+        mPaintDividing.setColor(Color.parseColor("#ff33b5e5"));
 
         mPaintText = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaintText.setTextSize(40);
-        mPaintText.setColor(Color.WHITE);
+        mPaintText.setTextSize(mTextSize);
+        mPaintText.setColor(Color.parseColor("#ff33b5e5"));
         mPaintText.setTextAlign(Paint.Align.CENTER);
 
         mPaintTriangle = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -73,15 +80,19 @@ public class RulerView extends View {
 
         mListIndexOnScreen = new ArrayList<>();
         mListPositionXOnScreen = new ArrayList<>();
+        mListTextOnScreen = new ArrayList<>();
+
 
         mAnimator = new ValueAnimator();
+        mAnimator.setInterpolator(new AccelerateInterpolator());
         mAnimator.addUpdateListener(animation -> {
             mOffsetX = (float) animation.getAnimatedValue();
             calculatePosition();
             invalidate();
         });
 
-        calculatePosition();
+        setBackgroundColor(Color.TRANSPARENT);
+
     }
 
     @Override
@@ -94,6 +105,11 @@ public class RulerView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         this.mWidthView = w;
         this.mHeightView = h;
+        this.mBigDividDefaultHeight = h/3;
+        this.mBigDividHeight = mBigDividDefaultHeight;
+//        this.mSmallDividHeight = mBigDividHeight/2;
+//        this.mTextSize = w/7;
+        calculatePosition();
     }
 
     private float mLastTouchX;
@@ -122,16 +138,17 @@ public class RulerView extends View {
         mListIndexOnScreen.clear();
         mListPositionXOnScreen.clear();
         mListPositionXOnScreenSmall.clear();
+        mListTextOnScreen.clear();
         for (int i = 0; i < mListData.size(); i++) {
-            mPaintDividing.setStrokeWidth(10);
             float length = i * 5 * mWidthBetweenDivid;
             float xBig = mWidthView / 2.f + length + mOffsetX;
-            if (xBig >= 0 && xBig <= mWidthView) {//只画屏幕上显示的
+            //只画屏幕上显示的
+            if (xBig >= 0 && xBig <= mWidthView) {
                 mListIndexOnScreen.add(i);//保存显示在屏幕上的View的索引
                 mListPositionXOnScreen.add(xBig);//保存显示在屏幕上的View的x轴的距离
+                mListTextOnScreen.add(mListData.get(i));
             }
             if (i < mListData.size()) {
-                mPaintDividing.setStrokeWidth(6);
                 for (int j = 0; j < 4; j++) {
                     float subLength = length + mWidthBetweenDivid * (j + 1);
                     float xSmall = mWidthView / 2.f + subLength + mOffsetX;
@@ -146,9 +163,13 @@ public class RulerView extends View {
     }
 
     private ValueAnimator mAnimator;
+    private VelocityTracker mVelocityTracker;
 
     @Override
     public synchronized boolean onTouchEvent(MotionEvent event) {
+        if (mVelocityTracker == null)
+            mVelocityTracker = VelocityTracker.obtain();
+        mVelocityTracker.addMovement(event);
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 mLastTouchX = event.getX();
@@ -161,8 +182,34 @@ public class RulerView extends View {
                 invalidate();
                 break;
             case MotionEvent.ACTION_UP:
+                //计算当前速度,
+                /*mVelocityTracker.computeCurrentVelocity(1000, 300);
+                //获取横向速度 ,因为上面单位是1000毫秒，所以这里获取到的速度就是 px/s
+                float velocityX = mVelocityTracker.getXVelocity();
+                ValueAnimator animator = ValueAnimator.ofFloat(mOffsetX, mOffsetX + velocityX);
+                animator.setDuration(1000);
+                animator.setInterpolator(new AccelerateDecelerateInterpolator());
+                animator.addUpdateListener(animation -> {
+                    mOffsetX = (float) animation.getAnimatedValue();
+                    calculatePosition();
+                    invalidate();
+                });
+                animator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        int index = findShortestIndex();
+                        animationFingerUp(index);
+                    }
+                });
+                animator.start();*/
                 int index = findShortestIndex();
                 animationFingerUp(index);
+                if (mVelocityTracker != null) {
+                    mVelocityTracker.recycle();
+                    mVelocityTracker = null;
+                }
+
                 break;
         }
         return true;
@@ -193,68 +240,70 @@ public class RulerView extends View {
     }
 
     private float mOffsetX;//尺子整体偏移量
+    private float mBigDividDefaultHeight;//尺子默认高度
     private float mBigDividHeight = 200;//大刻度高度
-    private float mSmallDividHeight = 100;//小刻度高度
+    private float mSmallDividHeight = 15;//小刻度高度
 
-    private float mWidthBetweenDivid = 50;//刻度尺之间的距离
+    private float mWidthBetweenDivid = 40;//刻度尺之间的距离
+
+    private List<Float> mListPositionXOnScreenSmall = new ArrayList<>();
 
     private void drawDividing2(Canvas canvas) {
+        //画长刻度
         for (int i = 0; i < mListPositionXOnScreen.size(); i++) {
             float xBig = mListPositionXOnScreen.get(i);
+            float ratio = Math.abs(xBig-mWidthView/2.f)/(mWidthBetweenDivid*5);
+            if (ratio<0)
+                ratio = 0;
+            if (ratio>1)
+                ratio = 1;
+            mBigDividHeight = mBigDividDefaultHeight-Math.abs(mBigDividDefaultHeight/2*(1-ratio));
             canvas.drawLine(xBig, 0, xBig, mBigDividHeight, mPaintDividing);//画长刻度
         }
+        //画短刻度
         for (int i = 0; i < mListPositionXOnScreenSmall.size(); i++) {
             float xSmall = mListPositionXOnScreenSmall.get(i);
             canvas.drawLine(xSmall, 0, xSmall, mSmallDividHeight, mPaintDividing);
         }
     }
 
-    private List<Float> mListPositionXOnScreenSmall = new ArrayList<>();
-
-    /**
-     * 画刻度
-     *
-     * @param canvas
-     */
-    private void drawDividing(Canvas canvas) {
-        mListIndexOnScreen.clear();
-        mListPositionXOnScreen.clear();
-        mListPositionXOnScreenSmall.clear();
-        for (int i = 0; i < mListData.size(); i++) {
-            mPaintDividing.setStrokeWidth(10);
-            float length = i * 5 * mWidthBetweenDivid;
-            float xBig = mWidthView / 2.f + length + mOffsetX;
-            if (xBig >= 0 && xBig <= mWidthView) {//只画屏幕上显示的
-                canvas.drawLine(xBig, 0, xBig, mBigDividHeight, mPaintDividing);
-                mListIndexOnScreen.add(i);//保存显示在屏幕上的View的索引
-                mListPositionXOnScreen.add(xBig);//保存显示在屏幕上的View的x轴的距离
-            }
-            if (i < mListData.size()) {
-                mPaintDividing.setStrokeWidth(6);
-                for (int j = 0; j < 4; j++) {
-                    float subLength = length + mWidthBetweenDivid * (j + 1);
-                    float xSmall = mWidthView / 2.f + subLength + mOffsetX;
-                    if (xSmall >= 0 && xSmall <= mWidthView) {//只画屏幕上显示的{
-                        canvas.drawLine(xSmall, 0, xSmall, mSmallDividHeight, mPaintDividing);
-                        mListPositionXOnScreenSmall.add(xSmall);
-                    }
-                }
-
-            }
+    private void drawText(Canvas canvas) {
+        for (int i = 0; i < mListPositionXOnScreen.size(); i++) {
+            float xBig = mListPositionXOnScreen.get(i);
+            //计算比例
+            float ratio = Math.abs(xBig-mWidthView/2.f)/(mWidthBetweenDivid*5);
+            if (ratio<0)
+                ratio = 0;
+            if (ratio>1)
+                ratio = 1;
+            int newSize = (int) (mTextSize + Math.abs(mTextSize*(1-ratio)));
+            mPaintText.setAlpha((int) (90+165*(1-ratio)));
+            mPaintText.setTextSize(newSize);
+            canvas.drawText(mListTextOnScreen.get(i),xBig,mBigDividDefaultHeight+40,mPaintText);
         }
 
-    }
-
-    private void drawText(Canvas canvas) {
-        for (int i = 0; i < mListData.size(); i++) {
+        /*for (int i = 0; i < mListData.size(); i++) {
             float length = i * 5 * mWidthBetweenDivid;
             float xText = mWidthView / 2.f + length + mOffsetX;
-            if (xText >= 0 && xText <= mWidthView)//只画显示在屏幕上
-                canvas.drawText(mListData.get(i), xText, mBigDividHeight + 50, mPaintText);
-        }
+            if (xText >= 0 && xText <= mWidthView) {//只画显示在屏幕上
+                float ratio = Math.abs(xText-mWidthView/2.f)/(mWidthBetweenDivid*5);
+                if (ratio<0)
+                    ratio = 0;
+                if (ratio > 1)
+                    ratio = 1;
+                mPaintText.setAlpha((int) (127+128*(1-ratio)));
+                //与中线间距小于200像素之类的，设置
+                if (Math.abs(xText-mWidthView/2.f)<(mWidthBetweenDivid*5)){
+                    mPaintText.setTextSize(20+20*(1-ratio));
+                }else{
+                    mPaintText.setTextSize(20);
+                }
+                canvas.drawText(mListData.get(i), xText, mBigDividHeight+25, mPaintText);
+            }
+        }*/
     }
 
     private void drawCenterTriangle(Canvas canvas) {
-        canvas.drawLine(mWidthView / 2.f, 0, mWidthView / 2.f, 30, mPaintTriangle);
+//        canvas.drawLine(mWidthView / 2.f, 0, mWidthView / 2.f, 30, mPaintTriangle);
     }
 }

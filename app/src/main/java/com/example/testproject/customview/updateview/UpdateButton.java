@@ -12,13 +12,15 @@ import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Shader;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+
+import com.example.testproject.R;
+
 
 /**
  * 升级Button
@@ -30,17 +32,21 @@ public class UpdateButton extends View implements View.OnClickListener {
     private Paint mPaintForeground;
     private Paint mPaintButton;
     private Paint mPaintText;
+    private Paint mPaintTextProgress;
     private LinearGradient mLinearGradient;
     private Matrix mMatrixGradient;//线性渐变矩阵
     private int mWidth, mHeight;
     private int mOffset;//线性渐变的移动位置
     private int mPaintButtonWidth;
     private int mLengthButton;
-    private String mStr = "点击升级";
+    private String mStr = getContext().getString(R.string.click_to_update);
     private int mAlphaText = 255;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     public static int mDefaultColorFail = 0xFFEF5350;
     public static int mDefaultColorSuccess = 0xFF00E676;
+
+    private static int mDefaultInitColor = 0xFFFFAB00;
 
     private Status mState;
 
@@ -71,18 +77,23 @@ public class UpdateButton extends View implements View.OnClickListener {
         mPaintForeground = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintForeground.setStyle(Paint.Style.STROKE);
         mPaintForeground.setStrokeWidth(mStrokeWidth / 5);
-        mPaintForeground.setColor(Color.parseColor("#F9C370"));
+        mPaintForeground.setColor(mDefaultInitColor);
         mPaintForeground.setStrokeCap(Paint.Cap.ROUND);
 
         mPaintButton = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintButton.setStyle(Paint.Style.STROKE);
-        mPaintButton.setColor(Color.parseColor("#F9C370"));
+        mPaintButton.setColor(mDefaultInitColor);
         mPaintButton.setStrokeCap(Paint.Cap.ROUND);
 
         mPaintText = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintText.setColor(Color.WHITE);
         mPaintText.setTextAlign(Paint.Align.CENTER);
         mPaintText.setTextSize(36);
+
+        mPaintTextProgress = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaintTextProgress.setColor(mDefaultInitColor);
+        mPaintTextProgress.setTextAlign(Paint.Align.CENTER);
+        mPaintTextProgress.setTextSize(24);
 
         mMatrixGradient = new Matrix();
 
@@ -103,7 +114,10 @@ public class UpdateButton extends View implements View.OnClickListener {
         mStrokeHeight = mStrokeWidth / 3;
         mPaintButtonWidth = mStrokeWidth * 2;
         mLengthButton = mWidth - mPaintButtonWidth / 2;
+        mPercentageTextPosY = calculatePercentagePosY();
     }
+
+    private float mPercentageTextPosY;
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -115,6 +129,8 @@ public class UpdateButton extends View implements View.OnClickListener {
             drawLinearGradient();
             //画上层的进度条
             drawForegroundProgressBar(canvas);
+            //画进度数字文字
+            drawProgressText(canvas);
         } else {
             //画按钮
             drawButton(canvas);
@@ -151,16 +167,20 @@ public class UpdateButton extends View implements View.OnClickListener {
         canvas.drawLine(mPaintButtonWidth / 2, mHeight / 2, mOffsetProgressBar, mHeight / 2, mPaintForeground);
     }
 
+    private String mPercentage = "0%";
+    private float mOffsetProgressText;
+
+    private void drawProgressText(Canvas canvas){
+        canvas.drawText(mPercentage,mOffsetProgressText, mPercentageTextPosY,mPaintTextProgress);
+    }
+
     private ValueAnimator mAnimatorGradient;
 
     private void animateGradient() {
         mAnimatorGradient = ValueAnimator.ofInt(0, 2 * getMeasuredWidth());
-        mAnimatorGradient.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mOffset = (int) animation.getAnimatedValue();
-                postInvalidate();
-            }
+        mAnimatorGradient.addUpdateListener(animation -> {
+            mOffset = (int) animation.getAnimatedValue();
+            postInvalidate();
         });
         mAnimatorGradient.setRepeatMode(ValueAnimator.RESTART);
         mAnimatorGradient.setRepeatCount(ValueAnimator.INFINITE);
@@ -172,10 +192,16 @@ public class UpdateButton extends View implements View.OnClickListener {
         mLinearGradient = new LinearGradient(-getMeasuredWidth(), mHeight / 2, 0, mHeight / 2, colors, positions, Shader.TileMode.CLAMP);//填充模式为边缘填充
     }
 
-    public void animateButtonEnd(String str,int endColor) {
+
+    /**
+     * @param str
+     * @param endColor
+     * @param cancelGradientAnimate 是否取消渐变动画
+     */
+    public void animateButtonEnd(String str, int endColor, boolean cancelGradientAnimate) {
         mStr = str;
-        if (mAnimatorGradient!=null&&mAnimatorGradient.isRunning()) {
-            mAnimatorGradient.cancel();
+        if (mAnimatorGradient != null && mAnimatorGradient.isRunning()) {
+            mHandler.post(() -> mAnimatorGradient.cancel());
             mAnimatorGradient.removeAllUpdateListeners();
             mAnimatorGradient.removeAllListeners();
         }
@@ -191,18 +217,14 @@ public class UpdateButton extends View implements View.OnClickListener {
                 PropertyValuesHolder alphaHolder = PropertyValuesHolder.ofInt(alpha, 0, 255);
                 PropertyValuesHolder heightHolder = PropertyValuesHolder.ofInt(height, mPaintButtonWidth, mHeight);
                 PropertyValuesHolder lengthHolder = PropertyValuesHolder.ofInt(length, (int) mOffsetProgressBar, mWidth - mHeight / 2);//mStrokeWidth = mHeight/2;
-                PropertyValuesHolder colorHolder = PropertyValuesHolder.ofInt(color,0xFFF9C370,0xFFFF0000);
-                final ValueAnimator animator = ValueAnimator.ofPropertyValuesHolder(alphaHolder, heightHolder, lengthHolder,colorHolder);
-                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        mAlphaText = (int) animation.getAnimatedValue(alpha);
-                        mPaintButtonWidth = (int) animation.getAnimatedValue(height);//画笔宽度
-                        mLengthButton = (int) animation.getAnimatedValue(length);//画笔长度
-                        Log.e("xiaojun","颜色值为:"+Integer.toHexString((int) animation.getAnimatedValue(color)));
+                PropertyValuesHolder colorHolder = PropertyValuesHolder.ofInt(color, 0xFFF9C370, 0xFFFF0000);
+                final ValueAnimator animator = ValueAnimator.ofPropertyValuesHolder(alphaHolder, heightHolder, lengthHolder, colorHolder);
+                animator.addUpdateListener(animation -> {
+                    mAlphaText = (int) animation.getAnimatedValue(alpha);
+                    mPaintButtonWidth = (int) animation.getAnimatedValue(height);//画笔宽度
+                    mLengthButton = (int) animation.getAnimatedValue(length);//画笔长度
 //                        mPaintButton.setColor(Color.parseColor("#"+Integer.toHexString((int) animation.getAnimatedValue(color))));
-                        postInvalidate();
-                    }
+                    postInvalidate();
                 });
                 animator.addListener(new AnimatorListenerAdapter() {
                     @Override
@@ -215,23 +237,18 @@ public class UpdateButton extends View implements View.OnClickListener {
                 });
                 animator.setEvaluator(new ArgbEvaluator());
                 animator.setDuration(400);
-                Looper.prepare();
-                animator.start();
-                Looper.loop();
+                mHandler.post(() -> animator.start());
             }
         }).start();
 
-        ValueAnimator colorAnimator = ValueAnimator.ofInt(0xFFF9C370,endColor);
+        ValueAnimator colorAnimator = ValueAnimator.ofInt(0xFFF9C370, endColor);
         colorAnimator.setEvaluator(new ArgbEvaluator());
         colorAnimator.setDuration(400);
-        colorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                int color = (int) animation.getAnimatedValue();
-                mPaintButton.setColor(color);
-            }
+        colorAnimator.addUpdateListener(animation -> {
+            int color = (int) animation.getAnimatedValue();
+            mPaintButton.setColor(color);
         });
-        colorAnimator.start();
+        mHandler.post(colorAnimator::start);
     }
 
     private void animateButtonStart() {
@@ -243,15 +260,11 @@ public class UpdateButton extends View implements View.OnClickListener {
         PropertyValuesHolder heightHolder = PropertyValuesHolder.ofInt(height, mPaintButtonWidth, mStrokeHeight);
         PropertyValuesHolder lengthHolder = PropertyValuesHolder.ofInt(length, mWidth - mPaintButtonWidth, 0);
         final ValueAnimator animator = ValueAnimator.ofPropertyValuesHolder(alphaHolder, heightHolder, lengthHolder);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mPaintButtonWidth = (int) animation.getAnimatedValue(height);
-                mAlphaText = (int) animation.getAnimatedValue(alpha);
-                mLengthButton = (int) animation.getAnimatedValue(length) + mPaintButtonWidth / 2;
-                postInvalidate();
-            }
-
+        animator.addUpdateListener(animation -> {
+            mPaintButtonWidth = (int) animation.getAnimatedValue(height);
+            mAlphaText = (int) animation.getAnimatedValue(alpha);
+            mLengthButton = (int) animation.getAnimatedValue(length) + mPaintButtonWidth / 2;
+            postInvalidate();
         });
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -261,7 +274,10 @@ public class UpdateButton extends View implements View.OnClickListener {
                 mOffsetProgressBar = mPaintButtonWidth / 2;
                 animator.removeAllListeners();
                 animator.removeAllUpdateListeners();
+                calculatePercentagePosX(mPercentage+"%",mOffsetProgressBar);
                 animateGradient();//渐变动画
+                if (mListener != null)
+                    mListener.onClick(UpdateButton.this);
             }
         });
         animator.setDuration(600);
@@ -278,8 +294,6 @@ public class UpdateButton extends View implements View.OnClickListener {
         animateButtonStart();
     }
 
-    ValueAnimator mAnimatorPercentage;
-
     /**
      * 由外部动态设置百分比
      *
@@ -289,28 +303,44 @@ public class UpdateButton extends View implements View.OnClickListener {
         if (ratio > 1)
             ratio = 1;
         final float realWidth = (mWidth - mPaintButtonWidth) * ratio;//真实长度
+        mOffsetProgressBar = realWidth + mPaintButtonWidth / 2;
+        String percentage = ratio*100+"";
+        mPercentage = percentage.substring(0,percentage.indexOf("."))+"%";
+        calculatePercentagePosX(mPercentage,mOffsetProgressBar);//重新确定百分比文本的位置
+        postInvalidate();
+    }
 
-        if (mAnimatorPercentage == null) {
-            mAnimatorPercentage = ValueAnimator.ofFloat(mOffsetProgressBar, realWidth);
-            final float finalRatio = ratio;
-            mAnimatorPercentage.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mOffsetProgressBar = (float) animation.getAnimatedValue() + mPaintButtonWidth / 2;
-                    postInvalidate();
-                }
-            });
-        } else {
-            mAnimatorPercentage.cancel();
-            mAnimatorPercentage.setFloatValues(mOffsetProgressBar, realWidth);
+    //计算百分比文本的y坐标
+    private float calculatePercentagePosY(){
+        Paint.FontMetrics fontMetrics = mPaintTextProgress.getFontMetrics();
+        float top = fontMetrics.top;
+        float bottom = fontMetrics.bottom;//baseline默认为0，baseline之上为负，之下为正
+        float heightText = bottom - top;//文字高度
+        return mHeight/2+mStrokeHeight/2+heightText;
+    }
+
+    //计算百分比文本的x坐标
+    private void calculatePercentagePosX(String text,float offsetX){
+        float width = mPaintTextProgress.measureText(text);
+        float halfWidth = width/2.f;
+        mOffsetProgressText = mOffsetProgressBar;
+        if (halfWidth>offsetX){
+            mOffsetProgressText += (halfWidth-offsetX);
         }
-        mAnimatorPercentage.setDuration(300);
-        mAnimatorPercentage.start();
+        if ((offsetX+halfWidth)>mWidth){
+            mOffsetProgressText -= offsetX+halfWidth-mWidth;
+        }
     }
 
     enum Status {
         Button,
         ProgressBar,
         Complete,
+    }
+
+    private OnClickListener mListener;
+
+    public void setListener(OnClickListener listener) {
+        this.mListener = listener;
     }
 }

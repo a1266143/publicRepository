@@ -41,6 +41,36 @@
             android:text="WaggleView"
             />
 
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="audioTrack"
+            android:text="AudioTrack"
+            />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="bolang"
+            android:text="波浪"
+            />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="ruler"
+            android:text="尺子"
+            />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="ruler2"
+            android:text="尺子2"
+            />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="surfaceview"
+            android:text="surfaceview"
+            />
+
     </LinearLayout>
 
 </ScrollView>

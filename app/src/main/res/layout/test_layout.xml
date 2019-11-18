@@ -7,7 +7,7 @@
     <com.example.testproject.CakeView
         android:id="@+id/cakeview"
         android:layout_width="400dp"
-        android:layout_height="400dp"
+        android:layout_height="500dp"
         android:layout_centerInParent="true"
         />
 

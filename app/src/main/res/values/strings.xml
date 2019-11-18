@@ -6,4 +6,5 @@
     <string name="format_string_plural">The age of this person is %d</string>
     <!-- 中文 -->
     <string name="chinese">中文</string>
+    <string name="click_to_update">点击升级</string>
 </resources>

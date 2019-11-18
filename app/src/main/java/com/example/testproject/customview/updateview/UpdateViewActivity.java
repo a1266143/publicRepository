@@ -2,6 +2,7 @@ package com.example.testproject.customview.updateview;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -30,10 +31,10 @@ public class UpdateViewActivity extends AppCompatActivity {
     }
 
     public void stop(View view){
-        updateButton.animateButtonEnd("升级失败",UpdateButton.mDefaultColorFail);
+        updateButton.animateButtonEnd("升级失败", UpdateButton.mDefaultColorFail,true);
     }
 
     public void success(View view){
-        updateButton.animateButtonEnd("升级成功",UpdateButton.mDefaultColorSuccess);
+        updateButton.animateButtonEnd("升级成功",UpdateButton.mDefaultColorSuccess,true);
     }
 }
