@@ -13,7 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".SurfaceViewActivity"></activity>
+        <activity android:name=".customview.CameraActivity"></activity>
+        <activity android:name=".SurfaceViewActivity" />
         <activity android:name=".customview.ruler.RulerActivity2" />
         <activity android:name=".customview.ruler.RulerActivity" />
         <activity android:name=".longpic.LongPicActivity" />

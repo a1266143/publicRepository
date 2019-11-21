@@ -1,15 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
+    android:clipChildren="false"
     tools:context=".SurfaceViewActivity">
 
-    <com.example.testproject.customview.AnimationView
+    <com.example.testproject.customview.BitmapShaderView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+    <com.example.testproject.customview.LrcView
         android:layout_width="400dp"
         android:layout_height="400dp"
         android:layout_gravity="center"
+        android:visibility="gone"
+        />
+
+    <com.example.testproject.customview.MixedModeView
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        />
+
+    <com.example.testproject.customview.ComplexView
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        />
+
+    <com.example.testproject.customview.OpenGLView
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        />
+
+    <com.example.testproject.customview.AnimationView
+        android:id="@+id/animationview"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:layout_gravity="center"
+        android:background="@android:color/transparent"
+        android:visibility="gone"
         />
 
     <ImageView
@@ -18,7 +55,15 @@
         android:background="@null"
         android:layout_gravity="center"
         android:visibility="gone"
-        android:src="@drawable/ic_launcher_foreground"
+        android:src="@drawable/ic_launcher_background"
+        />
+
+    <TextView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@android:color/holo_red_light"
+        android:layout_gravity="center"
+        android:visibility="gone"
         />
 
 </FrameLayout>
