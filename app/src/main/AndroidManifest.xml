@@ -4,6 +4,7 @@
     package="com.example.testproject">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
@@ -13,7 +14,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".customview.CameraActivity"></activity>
+        <activity android:name=".recyclerview.RecyclerViewTestActivity"></activity>
+        <activity android:name=".customview.BatteryActivity" />
+        <activity android:name=".activity.FreezeLiveButtonActivity" />
+        <activity android:name=".recyclerview_play.RecyclerViewPlayActivity" />
+        <activity android:name=".activity.ProgressBarProActivity" />
+        <activity android:name=".activity.MusicActivity" />
+        <activity android:name=".customview.CameraActivity" />
         <activity android:name=".SurfaceViewActivity" />
         <activity android:name=".customview.ruler.RulerActivity2" />
         <activity android:name=".customview.ruler.RulerActivity" />

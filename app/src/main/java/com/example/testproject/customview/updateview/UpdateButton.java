@@ -102,7 +102,7 @@ public class UpdateButton extends View implements View.OnClickListener {
         setOnClickListener(this);
 
         //关闭硬件加速
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
+//        setLayerType(LAYER_TYPE_SOFTWARE, null);
     }
 
     @Override

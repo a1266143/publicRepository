@@ -6,12 +6,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import com.example.testproject.activity.FreezeLiveButtonActivity;
+import com.example.testproject.activity.MusicActivity;
+import com.example.testproject.activity.ProgressBarProActivity;
 import com.example.testproject.architecture_components.data_binding.activity.DataBindingActivity;
+import com.example.testproject.customview.BatteryActivity;
+import com.example.testproject.customview.FreezeLiveButton;
 import com.example.testproject.customview.ruler.RulerActivity;
 import com.example.testproject.customview.ruler.RulerActivity2;
 import com.example.testproject.longpic.LongPicActivity;
 import com.example.testproject.customview.updateview.UpdateViewActivity;
 import com.example.testproject.customview.waggleview.WaggleActivity;
+import com.example.testproject.recyclerview.RecyclerViewTestActivity;
 import com.example.testproject.scroller.ScrollerActivity;
 import com.example.testproject.sina.SinaActivity;
 
@@ -67,6 +73,26 @@ public class MainActivity extends AppCompatActivity {
 
     public void surfaceview(View view){
         startActivity(newIntent(SurfaceViewActivity.class));
+    }
+
+    public void music(View view){
+        startActivity(newIntent(MusicActivity.class));
+    }
+
+    public void progressBarPro(View view){
+        startActivity(newIntent(ProgressBarProActivity.class));
+    }
+
+    public void freezelive(View view){
+        startActivity(newIntent(FreezeLiveButtonActivity.class));
+    }
+
+    public void battery(View view){
+        startActivity(newIntent(BatteryActivity.class));
+    }
+
+    public void layoutmanager(View view){
+        startActivity(newIntent(RecyclerViewTestActivity.class));
     }
 
     private Intent newIntent(Class dstActivity){

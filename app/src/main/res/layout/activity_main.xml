@@ -71,6 +71,36 @@
             android:text="surfaceview"
             />
 
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="music"
+            android:text="music"
+            />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="progressBarPro"
+            android:text="progressBarPro"
+            />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="freezelive"
+            android:text="FreezeLive"
+            />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="battery"
+            android:text="Battery"
+            />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="layoutmanager"
+            android:text="layoutmanager"
+            />
+
     </LinearLayout>
 
 </ScrollView>
