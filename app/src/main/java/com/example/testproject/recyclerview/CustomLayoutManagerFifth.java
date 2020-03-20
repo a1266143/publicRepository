@@ -85,11 +85,11 @@ public class CustomLayoutManagerFifth extends RecyclerView.LayoutManager {
 
     //获取RecyclerView所在的Rect,注意，是假设移动dy过后的Rect
     private Rect getRecyclerViewRect(int dy) {
-        return new Rect(0, mOffsetY + dy, getWidth(), getHeight() + mOffsetY + dy);
-//        mRectRecyclerView.left = 0;
-//        mRectRecyclerView.top = mOffsetY + dy;
-//        mRectRecyclerView.right = getWidth();
-//        mRectRecyclerView.bottom = getHeight() + mOffsetY + dy;
+        mRectRecyclerView.left = 0;
+        mRectRecyclerView.top = mOffsetY + dy;
+        mRectRecyclerView.right = getWidth();
+        mRectRecyclerView.bottom = getHeight() + mOffsetY + dy;
+        return mRectRecyclerView;
     }
 
     private void reuse(int dy, RecyclerView.Recycler recycler, Rect recyclerviewRect) {
