@@ -1,6 +1,7 @@
 package com.example.testproject.recyclerview;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
@@ -34,13 +35,16 @@ public class RecyclerViewTestActivity extends AppCompatActivity {
 //        CustomLayoutManager layoutManager = new CustomLayoutManager();
         CustomLayoutManagerAgain layoutManager = new CustomLayoutManagerAgain();
 //        CustomLayoutManagerThird layoutManager = new CustomLayoutManagerThird();
+//        CustomLayoutManagerForuth layoutManager = new CustomLayoutManagerForuth();
+//        CustomLayoutManagerFifth layoutManager = new CustomLayoutManagerFifth();
+//        LinearLayoutManager layoutManager = new LinearLayoutManager(this,RecyclerView.HORIZONTAL,false);
         mRecyclerView.setLayoutManager(layoutManager);
     }
 
     private List<String> getDatasForRecyclerView(){
         List<String> list = new ArrayList<>();
-        for (int i = 0; i < 30; i++) {
-            list.add((i+1)+"");
+        for (int i = 0; i < 100; i++) {
+            list.add(i+"");
         }
         return list;
 //        mAdapter = new RecyclerViewAdapter(list);
