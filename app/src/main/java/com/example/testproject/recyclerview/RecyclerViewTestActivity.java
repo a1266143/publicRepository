@@ -33,10 +33,11 @@ public class RecyclerViewTestActivity extends AppCompatActivity {
 
     private void setLayoutManager(){
 //        CustomLayoutManager layoutManager = new CustomLayoutManager();
-        CustomLayoutManagerAgain layoutManager = new CustomLayoutManagerAgain();
+//        CustomLayoutManagerAgain layoutManager = new CustomLayoutManagerAgain();
 //        CustomLayoutManagerThird layoutManager = new CustomLayoutManagerThird();
 //        CustomLayoutManagerForuth layoutManager = new CustomLayoutManagerForuth();
 //        CustomLayoutManagerFifth layoutManager = new CustomLayoutManagerFifth();
+        CustomLayoutManagerRecycler2 layoutManager = new CustomLayoutManagerRecycler2(this);
 //        LinearLayoutManager layoutManager = new LinearLayoutManager(this,RecyclerView.HORIZONTAL,false);
         mRecyclerView.setLayoutManager(layoutManager);
     }

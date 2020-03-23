@@ -1,7 +1,6 @@
 package com.example.testproject.recyclerview;
 
 import android.graphics.Rect;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 
