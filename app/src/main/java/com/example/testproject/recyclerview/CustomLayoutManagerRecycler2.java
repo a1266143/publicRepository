@@ -58,7 +58,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
-    public int getCurrentPosition(){
+    public int getCurrentPosition() {
         return mSelectedPosition;
     }
 
@@ -68,22 +68,22 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
 
         //获取当前的Rect
         Rect rect = mItemRects.get(mSelectedPosition);
-        int leftCenterWidth = Math.abs(getWidth() / 2 - (rect.left-mTotalMoveX))+mStartX;
-        int rightCenterWidth = Math.abs(getWidth() / 2 - (rect.right-mTotalMoveX))+mStartX;
+        int leftCenterWidth = Math.abs(getWidth() / 2 - (rect.left - mTotalMoveX)) + mStartX;
+        int rightCenterWidth = Math.abs(getWidth() / 2 - (rect.right - mTotalMoveX)) + mStartX;
         if (leftCenterWidth > rightCenterWidth) {
-            int centerItemX = (rect.right - rect.left)/2+rect.left-mTotalMoveX;
+            int centerItemX = (rect.right - rect.left) / 2 + rect.left - mTotalMoveX;
             int dx = getWidth() / 2 - centerItemX;
-            scrollHorizontallyBy(-1*dx,mRecycler,null);
-        }
-        else if (leftCenterWidth <= rightCenterWidth){
-            int centerItemX = (rect.right-rect.left)/2+rect.left-mTotalMoveX;
-            int dx = centerItemX-getWidth()/2;
-            scrollHorizontallyBy(dx,mRecycler,null);
+            scrollHorizontallyBy(-1 * dx, mRecycler, null);
+        } else if (leftCenterWidth <= rightCenterWidth) {
+            int centerItemX = (rect.right - rect.left) / 2 + rect.left - mTotalMoveX;
+            int dx = centerItemX - getWidth() / 2;
+            scrollHorizontallyBy(dx, mRecycler, null);
         }
     }
 
     /**
      * 重写此方法告诉RecyclerView是否开启自动测量
+     *
      * @return
      */
     @Override
@@ -93,6 +93,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
 
     /**
      * 重写此方法以支持smoothScrollToPosition
+     *
      * @param recyclerView
      * @param state
      * @param position
@@ -118,6 +119,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     /**
      * 根据速度算出应该滚动到item中间的新的距离
      * //TODO 这里需要再看一下计算
+     *
      * @param velocityX 速度
      * @return 新的Distance
      */
@@ -177,7 +179,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
         int randomHeight = getDecoratedMeasuredHeight(randomChild);
         int visibleCount = (int) Math.ceil(1.0 * getWidth() / randomWidth);//向上取整
         //可见的Item过滤
-        visibleCount = Math.min(visibleCount,getItemCount());
+        visibleCount = Math.min(visibleCount, getItemCount());
 
         mStartX = getWidth() / 2 - randomWidth / 2;
 
@@ -193,6 +195,9 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
         for (int i = 0; i < visibleCount; i++) {
             Rect childRect = mItemRects.get(i);
             View child = recycler.getViewForPosition(i);
+            //设置第一个child的选中状态
+            if (i == 0)
+                child.setBackgroundColor(Color.YELLOW);
             addView(child);
             measureChildWithMargins(child, 0, 0);
             layoutDecoratedWithMargins(child, childRect.left, childRect.top, childRect.right, childRect.bottom);
@@ -220,7 +225,6 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     }
 
 
-
     /**
      * @param state the new scroll state, one of {@link RecyclerView#SCROLL_STATE_IDLE},
      *              {@link RecyclerView#SCROLL_STATE_DRAGGING} or {@link RecyclerView#SCROLL_STATE_SETTLING}
@@ -232,9 +236,9 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
         if (mSelectedListener != null) {
             if (state == RecyclerView.SCROLL_STATE_SETTLING) {
                 mSelectedListener.change(mSelectedPosition);
-            }else if (state == RecyclerView.SCROLL_STATE_DRAGGING){
+            } else if (state == RecyclerView.SCROLL_STATE_DRAGGING) {
                 mSelectedListener.change(mSelectedPosition);
-            }else if (state == RecyclerView.SCROLL_STATE_IDLE){
+            } else if (state == RecyclerView.SCROLL_STATE_IDLE) {
                 mSelectedListener.selected(mSelectedPosition);
             }
         }
@@ -247,12 +251,14 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
 
     public interface OnSelectedListener {
         void selected(int position);
+
         void change(int position);
     }
 
     /**
      * 第一种回收复用方式
      * 通过使用offsetChildrenHorizontal(int)方法来进行滑动
+     *
      * @param dx
      * @param recycler
      * @param state
@@ -276,6 +282,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     /**
      * 第二种回收复用方式
      * 通过计算滑动过程不断进行布局来使其看起来像是滑动
+     *
      * @param dx
      * @param recycler
      * @return
@@ -492,20 +499,21 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
 
     /**
      * 当某个子View被选时被回调
-     * @param rect 被选中的子View所在的Rect
+     *
+     * @param rect  被选中的子View所在的Rect
      * @param child 被选中的子View
      */
     private void selectedSetting(Rect rect, View child) {
         if (getWidth() / 2 >= rect.left - mTotalMoveX && getWidth() / 2 < rect.right - mTotalMoveX) {
-//            child.setBackgroundColor(Color.YELLOW);
+            child.setBackgroundColor(Color.YELLOW);
             if (child != mLastChild) {
                 shake();
                 mLastChild = child;
                 mSelectedPosition = getPosition(child);
-                Log.e("xiaojun", "当前被选中的Position:" + mSelectedPosition+",mState="+mState);
+                Log.e("xiaojun", "当前被选中的Position:" + mSelectedPosition + ",mState=" + mState);
             }
         } else {
-//            child.setBackgroundColor(Color.parseColor("#ff00ddff"));
+            child.setBackgroundColor(Color.parseColor("#00000000"));
         }
     }
 
