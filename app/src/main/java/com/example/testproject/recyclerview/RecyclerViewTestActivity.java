@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.example.testproject.R;
 
@@ -38,13 +39,23 @@ public class RecyclerViewTestActivity extends AppCompatActivity {
 //        CustomLayoutManagerForuth layoutManager = new CustomLayoutManagerForuth();
 //        CustomLayoutManagerFifth layoutManager = new CustomLayoutManagerFifth();
         CustomLayoutManagerRecycler2 layoutManager = new CustomLayoutManagerRecycler2(this);
-//        LinearLayoutManager layoutManager = new LinearLayoutManager(this,RecyclerView.HORIZONTAL,false);
+        layoutManager.setOnSelectedListener(new CustomLayoutManagerRecycler2.OnSelectedListener() {
+            @Override
+            public void selected(int position) {
+                Log.e("RecyclerView1","selected:"+position);
+            }
+
+            @Override
+            public void change(int position) {
+                Log.e("RecyclerView1","change:"+position);
+            }
+        });
         mRecyclerView.setLayoutManager(layoutManager);
     }
 
     private List<String> getDatasForRecyclerView(){
         List<String> list = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 9; i++) {
             list.add(i+"");
         }
         return list;

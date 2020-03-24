@@ -21,6 +21,9 @@ import androidx.recyclerview.widget.RecyclerView;
  * 4-1.实现Item复用的第二种方式:每次滑动不是通过offsetChildrenHorizontal来，而是通过layout来动态更新位置(已实现.....)
  * 5.边界拦截改为左边第一个item初始化在RecyclerView中间，滑动到最右边时，最后一个Item在RecyclerView中间(已实现....)
  * 6.每次滑动会停留在某个Item的中间（需要在RecyclerView中重写相关方法实现）
+ * //TODO 待解决问题:
+ * 1.onLayoutChildren重调的bug
+ * 2.
  * <p>
  * created by xiaojun at 2020/3/23
  */
@@ -42,16 +45,44 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     private OnSelectedListener mSelectedListener;
     //振动器
     private Vibrator mVibrator;
+    //当前被选中的Rect的位置
+    private int mSelectedPosition;
+    private RecyclerView.Recycler mRecycler;
 
     public CustomLayoutManagerRecycler2(Context context) {
         super();
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
+    //滑动到当前Item的中间
+    //需要计算出当前item和recyclerview中间的偏移量
+    public void slideCurrentItemCenter() {
+
+        //获取当前的Rect
+        Rect rect = mItemRects.get(mSelectedPosition);
+        int leftCenterWidth = Math.abs(getWidth() / 2 - (rect.left-mTotalMoveX))+mStartX;
+        int rightCenterWidth = Math.abs(getWidth() / 2 - (rect.right-mTotalMoveX))+mStartX;
+        if (leftCenterWidth > rightCenterWidth) {
+            int centerItemX = (rect.right - rect.left)/2+rect.left-mTotalMoveX;
+            int dx = getWidth() / 2 - centerItemX;
+            scrollHorizontallyBy(-1*dx,mRecycler,null);
+        }
+        else if (leftCenterWidth <= rightCenterWidth){
+            int centerItemX = (rect.right-rect.left)/2+rect.left-mTotalMoveX;
+            int dx = centerItemX-getWidth()/2;
+            scrollHorizontallyBy(dx,mRecycler,null);
+        }
+    }
+
     @Override
     public void onLayoutCompleted(RecyclerView.State state) {
         super.onLayoutCompleted(state);
-        Log.e("xiaojun","OnLayoutCompleted:"+state);
+        Log.e("xiaojun", "OnLayoutCompleted:" + state);
+    }
+
+    @Override
+    public boolean supportsPredictiveItemAnimations() {
+        return true;
     }
 
     /**
@@ -94,14 +125,20 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     /**
      * 初始化布局（目前这个LayoutManager只支持宽度固定的Item）
      * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     *!!!!!!!!!!!!!!!!!!!!!!!!在本LayoutManager被切换到其他APP后，回来的时候可能会重调引起错误,所以需要重新处理一下!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     * !!!!!!!!!!!!!!!!!!!!!!!!在本LayoutManager被切换到其他APP后，回来的时候可能会重调引起错误,所以需要重新处理一下!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     *
      * @param recycler 缓存器(可以通过此缓存器拿出缓存中的View)
      * @param state
      */
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-        Log.e("xiaojun","onLayoutChildren");
+        Log.e("xiaojun", "onLayoutChildren,state="+ state.toString());
+        if (getItemCount() == 0)
+            return;
+        if (!state.didStructureChange())
+            return;
+        this.mRecycler = recycler;
         detachAndScrapAttachedViews(recycler);//将现在屏幕上显示的Item离屏缓存到recycler
 
         //随机获取一个item的宽度用于计算当前屏幕总共可以显示多少个Item
@@ -110,6 +147,8 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
         int randomWidth = getDecoratedMeasuredWidth(randomChild);
         int randomHeight = getDecoratedMeasuredHeight(randomChild);
         int visibleCount = (int) Math.ceil(1.0 * getWidth() / randomWidth);//向上取整
+        //可见的Item过滤
+        visibleCount = Math.min(visibleCount,getItemCount());
 
         mStartX = getWidth() / 2 - randomWidth / 2;
 
@@ -121,6 +160,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
             offsetX += randomWidth;
         }
 
+        Log.e("xiaojun","visibleCount="+visibleCount);
         //布局初始的Item
         for (int i = 0; i < visibleCount; i++) {
             Rect childRect = mItemRects.get(i);
@@ -131,7 +171,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
         }
 
         mWidthItem = randomWidth;
-        mTotalWidth = offsetX;
+        mTotalWidth = Math.min(offsetX,getWidth());
     }
 
     /**
@@ -145,32 +185,41 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     @Override
     public int scrollHorizontallyBy(int dx, RecyclerView.Recycler recycler, RecyclerView.State state) {
 //        int realDx = scrollHorizontallyBy1(dx, recycler, state);
+        mRecycler = recycler;
         int realDx = scrollHorizontallyBy2(dx, recycler, state);
         return realDx;
     }
 
+    private int mState;
+
     /**
      * @param state the new scroll state, one of {@link #SCROLL_STATE_IDLE},
-     *                    {@link #SCROLL_STATE_DRAGGING} or {@link #SCROLL_STATE_SETTLING}
+     *              {@link #SCROLL_STATE_DRAGGING} or {@link #SCROLL_STATE_SETTLING}
      */
     @Override
     public void onScrollStateChanged(int state) {
         super.onScrollStateChanged(state);
-        Log.e("xiaojun","state.Layoutmanager="+state);
-        if (mSelectedListener!=null){
-            if (state == RecyclerView.SCROLL_STATE_SETTLING){
-//                mSelectedListener.selected();
+        mState = state;
+        Log.e("xiaojun", "state.Layoutmanager=" + state);
+        if (mSelectedListener != null) {
+            if (state == RecyclerView.SCROLL_STATE_SETTLING) {
+                mSelectedListener.change(mSelectedPosition);
+            }else if (state == RecyclerView.SCROLL_STATE_DRAGGING){
+                mSelectedListener.change(mSelectedPosition);
+            }else if (state == RecyclerView.SCROLL_STATE_IDLE){
+                mSelectedListener.selected(mSelectedPosition);
             }
         }
 
     }
 
-    public void setOnSelectedListener(OnSelectedListener listener){
-
+    public void setOnSelectedListener(OnSelectedListener listener) {
+        this.mSelectedListener = listener;
     }
 
-    public interface OnSelectedListener{
+    public interface OnSelectedListener {
         void selected(int position);
+        void change(int position);
     }
 
     /**
@@ -387,7 +436,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
                 Rect rect = mItemRects.get(i);
                 if (Rect.intersects(rect, recyclerViewRect)) {
                     View child = recycler.getViewForPosition(i);
-                    selectedSetting(rect,child);
+                    selectedSetting(rect, child);
                     addView(child);
                     measureChildWithMargins(child, 0, 0);
                     layoutDecoratedWithMargins(child, rect.left - mTotalMoveX, 0, rect.right - mTotalMoveX, rect.bottom);
@@ -402,7 +451,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
                 Rect rect = mItemRects.get(i);
                 if (Rect.intersects(rect, recyclerViewRect)) {
                     View child = recycler.getViewForPosition(i);
-                    selectedSetting(rect,child);
+                    selectedSetting(rect, child);
                     addView(child);
                     measureChildWithMargins(child, 0, 0);
                     layoutDecoratedWithMargins(child, rect.left - mTotalMoveX, 0, rect.right - mTotalMoveX, rect.bottom);
@@ -414,22 +463,23 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
 
     private View mLastChild;
 
-    private void selectedSetting(Rect rect,View child) {
-        if (getWidth()/2>=rect.left-mTotalMoveX&&getWidth()/2<rect.right-mTotalMoveX){
+    private void selectedSetting(Rect rect, View child) {
+        if (getWidth() / 2 >= rect.left - mTotalMoveX && getWidth() / 2 < rect.right - mTotalMoveX) {
             child.setBackgroundColor(Color.YELLOW);
-            if (child!=mLastChild){
+            if (child != mLastChild) {
                 shake();
                 mLastChild = child;
-            }
-        }
+                mSelectedPosition = getPosition(child);
+                Log.e("xiaojun", "当前被选中的Position:" + mSelectedPosition+",mState="+mState);
 
-        else{
+            }
+        } else {
             child.setBackgroundColor(Color.parseColor("#ff00ddff"));
         }
     }
 
-    private void shake(){
-        if (mVibrator.hasVibrator()){
+    private void shake() {
+        if (mVibrator.hasVibrator()) {
             mVibrator.vibrate(40);
         }
     }
@@ -437,12 +487,12 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     @Override
     public void onAttachedToWindow(RecyclerView view) {
         super.onAttachedToWindow(view);
-        Log.e("xiaojun","layoutManager:onAttachedToWindow");
+        Log.e("xiaojun", "layoutManager:onAttachedToWindow");
     }
 
     @Override
     public void onDetachedFromWindow(RecyclerView view, RecyclerView.Recycler recycler) {
         super.onDetachedFromWindow(view, recycler);
-        Log.e("xiaojun","layoutManager:onDetachedFromWindow");
+        Log.e("xiaojun", "layoutManager:onDetachedFromWindow");
     }
 }
