@@ -22,8 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
  * 5.边界拦截改为左边第一个item初始化在RecyclerView中间，滑动到最右边时，最后一个Item在RecyclerView中间(已实现....)
  * 6.每次滑动会停留在某个Item的中间（需要在RecyclerView中重写相关方法实现）
  * //TODO 待解决问题:
- * 1.onLayoutChildren重调的bug
- * 2.
+ * 1.onLayoutChildren重调的bug(已解决)
+ * 2.重写smoothScrollToPosition
  * <p>
  * created by xiaojun at 2020/3/23
  */
@@ -47,11 +47,19 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     private Vibrator mVibrator;
     //当前被选中的Rect的位置
     private int mSelectedPosition;
+    //当前宿主RecyclerView的状态
+    private int mState;
+    //上一次选择的View:不让滑动时,重复赋值
+    private View mLastChild;
     private RecyclerView.Recycler mRecycler;
 
     public CustomLayoutManagerRecycler2(Context context) {
         super();
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+    }
+
+    public int getCurrentPosition(){
+        return mSelectedPosition;
     }
 
     //滑动到当前Item的中间
@@ -74,10 +82,32 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
         }
     }
 
+    /**
+     * 重写此方法告诉RecyclerView是否开启自动测量
+     * @return
+     */
+    @Override
+    public boolean isAutoMeasureEnabled() {
+        return true;
+    }
+
+    /**
+     * 重写此方法以支持smoothScrollToPosition
+     * @param recyclerView
+     * @param state
+     * @param position
+     */
+    @Override
+    public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position) {
+        super.smoothScrollToPosition(recyclerView, state, position);
+        CustomSmoothScroller smoothScroller = new CustomSmoothScroller(recyclerView.getContext());
+        smoothScroller.setTargetPosition(position);
+        startSmoothScroll(smoothScroller);
+    }
+
     @Override
     public void onLayoutCompleted(RecyclerView.State state) {
         super.onLayoutCompleted(state);
-        Log.e("xiaojun", "OnLayoutCompleted:" + state);
     }
 
     @Override
@@ -87,7 +117,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
 
     /**
      * 根据速度算出应该滚动到item中间的新的距离
-     *
+     * //TODO 这里需要再看一下计算
      * @param velocityX 速度
      * @return 新的Distance
      */
@@ -133,7 +163,6 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
      */
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-        Log.e("xiaojun", "onLayoutChildren,state="+ state.toString());
         if (getItemCount() == 0)
             return;
         if (!state.didStructureChange())
@@ -160,7 +189,6 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
             offsetX += randomWidth;
         }
 
-        Log.e("xiaojun","visibleCount="+visibleCount);
         //布局初始的Item
         for (int i = 0; i < visibleCount; i++) {
             Rect childRect = mItemRects.get(i);
@@ -171,7 +199,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
         }
 
         mWidthItem = randomWidth;
-        mTotalWidth = Math.min(offsetX,getWidth());
+        mTotalWidth = offsetX;
     }
 
     /**
@@ -185,22 +213,22 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     @Override
     public int scrollHorizontallyBy(int dx, RecyclerView.Recycler recycler, RecyclerView.State state) {
 //        int realDx = scrollHorizontallyBy1(dx, recycler, state);
+        if (getItemCount() == 0)
+            return 0;
         mRecycler = recycler;
-        int realDx = scrollHorizontallyBy2(dx, recycler, state);
-        return realDx;
+        return scrollHorizontallyBy2(dx, recycler);
     }
 
-    private int mState;
+
 
     /**
-     * @param state the new scroll state, one of {@link #SCROLL_STATE_IDLE},
-     *              {@link #SCROLL_STATE_DRAGGING} or {@link #SCROLL_STATE_SETTLING}
+     * @param state the new scroll state, one of {@link RecyclerView#SCROLL_STATE_IDLE},
+     *              {@link RecyclerView#SCROLL_STATE_DRAGGING} or {@link RecyclerView#SCROLL_STATE_SETTLING}
      */
     @Override
     public void onScrollStateChanged(int state) {
         super.onScrollStateChanged(state);
         mState = state;
-        Log.e("xiaojun", "state.Layoutmanager=" + state);
         if (mSelectedListener != null) {
             if (state == RecyclerView.SCROLL_STATE_SETTLING) {
                 mSelectedListener.change(mSelectedPosition);
@@ -224,7 +252,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
 
     /**
      * 第一种回收复用方式
-     *
+     * 通过使用offsetChildrenHorizontal(int)方法来进行滑动
      * @param dx
      * @param recycler
      * @param state
@@ -247,13 +275,12 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
 
     /**
      * 第二种回收复用方式
-     *
+     * 通过计算滑动过程不断进行布局来使其看起来像是滑动
      * @param dx
      * @param recycler
-     * @param state
      * @return
      */
-    private int scrollHorizontallyBy2(int dx, RecyclerView.Recycler recycler, RecyclerView.State state) {
+    private int scrollHorizontallyBy2(int dx, RecyclerView.Recycler recycler) {
         //1.拦截边界
         int realDx = interceptCenter(dx);
         //2.回收item
@@ -424,6 +451,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
      * @param recyclerViewRect RecyclerView所在的Rect
      */
     private void recyclerItemLayout2(int realDx, RecyclerView.Recycler recycler, Rect recyclerViewRect) {
+        //先保存第一个和最后一个View，下面的detach操作会导致获取为null
         View viewFirst = getChildAt(0);
         View viewLast = getChildAt(getChildCount() - 1);
 
@@ -440,6 +468,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
                     addView(child);
                     measureChildWithMargins(child, 0, 0);
                     layoutDecoratedWithMargins(child, rect.left - mTotalMoveX, 0, rect.right - mTotalMoveX, rect.bottom);
+                    //可以在这里进行改变Item外观(大小，旋转，透明度等...)
 //                    child.setRotationX(child.getRotationX() + 1);
                 }
             }
@@ -461,26 +490,29 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
         }
     }
 
-    private View mLastChild;
-
+    /**
+     * 当某个子View被选时被回调
+     * @param rect 被选中的子View所在的Rect
+     * @param child 被选中的子View
+     */
     private void selectedSetting(Rect rect, View child) {
         if (getWidth() / 2 >= rect.left - mTotalMoveX && getWidth() / 2 < rect.right - mTotalMoveX) {
-            child.setBackgroundColor(Color.YELLOW);
+//            child.setBackgroundColor(Color.YELLOW);
             if (child != mLastChild) {
                 shake();
                 mLastChild = child;
                 mSelectedPosition = getPosition(child);
                 Log.e("xiaojun", "当前被选中的Position:" + mSelectedPosition+",mState="+mState);
-
             }
         } else {
-            child.setBackgroundColor(Color.parseColor("#ff00ddff"));
+//            child.setBackgroundColor(Color.parseColor("#ff00ddff"));
         }
     }
 
     private void shake() {
         if (mVibrator.hasVibrator()) {
-            mVibrator.vibrate(40);
+            mVibrator.cancel();
+            mVibrator.vibrate(60);
         }
     }
 

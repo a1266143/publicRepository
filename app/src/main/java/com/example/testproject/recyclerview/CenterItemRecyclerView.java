@@ -22,14 +22,21 @@ public class CenterItemRecyclerView extends RecyclerView {
 
     public CenterItemRecyclerView(@NonNull Context context) {
         super(context);
+        init();
     }
 
     public CenterItemRecyclerView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public CenterItemRecyclerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void init(){
+        setOverScrollMode(OVER_SCROLL_NEVER);
     }
 
     @Override
@@ -43,7 +50,9 @@ public class CenterItemRecyclerView extends RecyclerView {
         mState = state;
         Log.e("xiaojun","mState="+mState);
         if (mState == RecyclerView.SCROLL_STATE_IDLE){
-            ((CustomLayoutManagerRecycler2) getLayoutManager()).slideCurrentItemCenter();
+//            ((CustomLayoutManagerRecycler2) getLayoutManager()).slideCurrentItemCenter();
+//            smoothScrollToPosition(4);
+            smoothScrollToPosition(((CustomLayoutManagerRecycler2) getLayoutManager()).getCurrentPosition());
         }
     }
 
@@ -56,12 +65,14 @@ public class CenterItemRecyclerView extends RecyclerView {
      */
     @Override
     public boolean fling(int velocityX, int velocityY) {
+        if (getChildCount()==0)
+            return false;
         CustomLayoutManagerRecycler2 layoutManager = (CustomLayoutManagerRecycler2) getLayoutManager();
-        int newVelocityX = (int) (velocityX * 0.4f);
-        Log.e("xiaojun", "newVelocityX=" + newVelocityX);
+        int newVelocityX = (int) (velocityX * 0.8f);
         if (newVelocityX < FLING_VALUE_EDGE && newVelocityX > -1 * FLING_VALUE_EDGE) {
             //让LayoutManager自动滑动到当前View的中间
-            layoutManager.slideCurrentItemCenter();
+//            layoutManager.slideCurrentItemCenter();
+            smoothScrollToPosition(layoutManager.getCurrentPosition());
             return false;
         }
         //根据滑动系数算出fling的距离

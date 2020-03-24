@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.testproject.R;
 
 import java.util.List;
@@ -20,8 +21,10 @@ import java.util.List;
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
 
     public List<String> mDatas;
+    private Context mContext;
 
-    public RecyclerViewAdapter(List<String> datas){
+    public RecyclerViewAdapter(Context context,List<String> datas){
+        this.mContext = context;
         this.mDatas = datas;
     }
 
@@ -40,6 +43,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
         holder.mTv.setText(mDatas.get(position));
+        Glide.with(mContext).load(Integer.parseInt(mDatas.get(position))).into(holder.mIv);
         mBindViewHolder++;
         Log.e("xiaojun","onBindViewHolder="+mBindViewHolder);
     }

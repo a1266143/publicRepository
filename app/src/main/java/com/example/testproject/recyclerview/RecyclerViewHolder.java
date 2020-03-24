@@ -1,6 +1,7 @@
 package com.example.testproject.recyclerview;
 
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,9 +16,11 @@ import com.example.testproject.R;
 public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
     public TextView mTv;
+    public ImageView mIv;
 
     public RecyclerViewHolder(@NonNull View itemView) {
         super(itemView);
         mTv = itemView.findViewById(R.id.item_layout_tv);
+        mIv = itemView.findViewById(R.id.item_layout_iv);
     }
 }
