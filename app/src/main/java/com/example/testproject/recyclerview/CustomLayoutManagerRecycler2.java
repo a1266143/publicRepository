@@ -476,7 +476,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
                     measureChildWithMargins(child, 0, 0);
                     layoutDecoratedWithMargins(child, rect.left - mTotalMoveX, 0, rect.right - mTotalMoveX, rect.bottom);
                     //可以在这里进行改变Item外观(大小，旋转，透明度等...)
-//                    child.setRotationX(child.getRotationX() + 1);
+//                    calculateChildAlpha(child,rect);
                 }
             }
         }
@@ -491,10 +491,26 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
                     addView(child);
                     measureChildWithMargins(child, 0, 0);
                     layoutDecoratedWithMargins(child, rect.left - mTotalMoveX, 0, rect.right - mTotalMoveX, rect.bottom);
-//                    child.setRotationX(child.getRotationX() + 1);
+//                    calculateChildAlpha(child,rect);
                 }
             }
         }
+    }
+
+    /**
+     * 计算显示在屏幕上的child的透明度
+     * 1.计算rect中线在屏幕上的位置
+     * 2.中线离recyclerview的中线越近，透明度越小
+     * @param child
+     */
+    private void calculateChildAlpha(View child,Rect rect){
+        int itemCenterLineXOnScreen = (rect.right-rect.left)/2+rect.left-mTotalMoveX;
+        int screenCenterLineX = getWidth()/2;
+        float alphaValue =  1.0f*Math.abs(itemCenterLineXOnScreen-screenCenterLineX)/screenCenterLineX;
+        float realAlphaValue = 1-alphaValue;
+        child.setAlpha(realAlphaValue);
+        child.setScaleX(realAlphaValue);
+        child.setScaleY(realAlphaValue);
     }
 
     /**
