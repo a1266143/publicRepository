@@ -7,7 +7,6 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,7 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
  * <p>
  * created by xiaojun at 2020/3/23
  */
-public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
+public class CenterShowLayoutManager extends RecyclerView.LayoutManager {
 
     //保存Rect的缓存列表
     private SparseArray<Rect> mItemRects = new SparseArray<>();
@@ -53,7 +52,7 @@ public class CustomLayoutManagerRecycler2 extends RecyclerView.LayoutManager {
     private View mLastChild;
     private RecyclerView.Recycler mRecycler;
 
-    public CustomLayoutManagerRecycler2(Context context) {
+    public CenterShowLayoutManager(Context context) {
         super();
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
     }

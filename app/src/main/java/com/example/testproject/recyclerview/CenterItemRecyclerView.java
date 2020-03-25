@@ -52,7 +52,7 @@ public class CenterItemRecyclerView extends RecyclerView {
         if (mState == RecyclerView.SCROLL_STATE_IDLE){
 //            ((CustomLayoutManagerRecycler2) getLayoutManager()).slideCurrentItemCenter();
 //            smoothScrollToPosition(4);
-            smoothScrollToPosition(((CustomLayoutManagerRecycler2) getLayoutManager()).getCurrentPosition());
+            smoothScrollToPosition(((CenterShowLayoutManager) getLayoutManager()).getCurrentPosition());
         }
     }
 
@@ -67,7 +67,7 @@ public class CenterItemRecyclerView extends RecyclerView {
     public boolean fling(int velocityX, int velocityY) {
         if (getChildCount()==0)
             return false;
-        CustomLayoutManagerRecycler2 layoutManager = (CustomLayoutManagerRecycler2) getLayoutManager();
+        CenterShowLayoutManager layoutManager = (CenterShowLayoutManager) getLayoutManager();
         int newVelocityX = (int) (velocityX * 0.8f);
         if (newVelocityX < FLING_VALUE_EDGE && newVelocityX > -1 * FLING_VALUE_EDGE) {
             //让LayoutManager自动滑动到当前View的中间

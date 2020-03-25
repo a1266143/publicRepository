@@ -1,14 +1,12 @@
 package com.example.testproject.recyclerview;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.testproject.R;
 
@@ -47,8 +45,8 @@ public class RecyclerViewTestActivity extends AppCompatActivity {
 //        CustomLayoutManagerThird layoutManager = new CustomLayoutManagerThird();
 //        CustomLayoutManagerForuth layoutManager = new CustomLayoutManagerForuth();
 //        CustomLayoutManagerFifth layoutManager = new CustomLayoutManagerFifth();
-        CustomLayoutManagerRecycler2 layoutManager = new CustomLayoutManagerRecycler2(this);
-        layoutManager.setOnSelectedListener(new CustomLayoutManagerRecycler2.OnSelectedListener() {
+        CenterShowLayoutManager layoutManager = new CenterShowLayoutManager(this);
+        layoutManager.setOnSelectedListener(new CenterShowLayoutManager.OnSelectedListener() {
             @Override
             public void selected(int position) {
                 Log.e("RecyclerView1","selected:"+position);

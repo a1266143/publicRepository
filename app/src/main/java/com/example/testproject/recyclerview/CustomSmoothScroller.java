@@ -5,7 +5,7 @@ import android.content.Context;
 import androidx.recyclerview.widget.LinearSmoothScroller;
 
 /**
- * 自定义SmoothScroller以让 {@link com.example.testproject.recyclerview.CustomLayoutManagerRecycler2}
+ * 自定义SmoothScroller以让 {@link CenterShowLayoutManager}
  * 支持{#smoothScrollToPosition}方法
  *
  * created by xiaojun at 2020/3/23
