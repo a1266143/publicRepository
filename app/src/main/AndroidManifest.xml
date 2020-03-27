@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".recyclerview.RecyclerViewTestActivity"></activity>
+        <activity android:name=".activity.PopupWindowActivity"></activity>
+        <activity android:name=".recyclerview.RecyclerViewTestActivity" />
         <activity android:name=".customview.BatteryActivity" />
         <activity android:name=".activity.FreezeLiveButtonActivity" />
         <activity android:name=".recyclerview_play.RecyclerViewPlayActivity" />

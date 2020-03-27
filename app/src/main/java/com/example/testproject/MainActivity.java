@@ -5,9 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 
 import com.example.testproject.activity.FreezeLiveButtonActivity;
 import com.example.testproject.activity.MusicActivity;
+import com.example.testproject.activity.PopupWindowActivity;
 import com.example.testproject.activity.ProgressBarProActivity;
 import com.example.testproject.architecture_components.data_binding.activity.DataBindingActivity;
 import com.example.testproject.customview.BatteryActivity;
@@ -17,16 +19,23 @@ import com.example.testproject.customview.ruler.RulerActivity2;
 import com.example.testproject.longpic.LongPicActivity;
 import com.example.testproject.customview.updateview.UpdateViewActivity;
 import com.example.testproject.customview.waggleview.WaggleActivity;
+import com.example.testproject.popupwindow.PopupWindowManager;
 import com.example.testproject.recyclerview.RecyclerViewTestActivity;
 import com.example.testproject.scroller.ScrollerActivity;
 import com.example.testproject.sina.SinaActivity;
 
+import cn.bingoogolapple.transformerstip.TransformersTip;
+import cn.bingoogolapple.transformerstip.gravity.TipGravity;
+
 public class MainActivity extends AppCompatActivity {
+
+    private Button mBtnLayoutmanager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mBtnLayoutmanager = findViewById(R.id.layoutmanager);
     }
 
     //蜘蛛网图
@@ -93,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void layoutmanager(View view){
         startActivity(newIntent(RecyclerViewTestActivity.class));
+    }
+
+    public void popupwindow(View view){
+        startActivity(newIntent(PopupWindowActivity.class));
     }
 
     private Intent newIntent(Class dstActivity){

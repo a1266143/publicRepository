@@ -96,9 +96,17 @@
             />
 
         <Button
+            android:id="@+id/layoutmanager"
             style="@style/ButtonStyle"
             android:onClick="layoutmanager"
             android:text="layoutmanager"
+            />
+
+        <Button
+            style="@style/ButtonStyle"
+            android:onClick="popupwindow"
+            android:text="layoutmanager"
+            android:layout_gravity="center"
             />
 
     </LinearLayout>
