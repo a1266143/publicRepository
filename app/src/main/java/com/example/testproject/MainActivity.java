@@ -13,19 +13,15 @@ import com.example.testproject.activity.PopupWindowActivity;
 import com.example.testproject.activity.ProgressBarProActivity;
 import com.example.testproject.architecture_components.data_binding.activity.DataBindingActivity;
 import com.example.testproject.customview.BatteryActivity;
-import com.example.testproject.customview.FreezeLiveButton;
 import com.example.testproject.customview.ruler.RulerActivity;
 import com.example.testproject.customview.ruler.RulerActivity2;
 import com.example.testproject.longpic.LongPicActivity;
 import com.example.testproject.customview.updateview.UpdateViewActivity;
 import com.example.testproject.customview.waggleview.WaggleActivity;
-import com.example.testproject.popupwindow.PopupWindowManager;
 import com.example.testproject.recyclerview.RecyclerViewTestActivity;
 import com.example.testproject.scroller.ScrollerActivity;
 import com.example.testproject.sina.SinaActivity;
 
-import cn.bingoogolapple.transformerstip.TransformersTip;
-import cn.bingoogolapple.transformerstip.gravity.TipGravity;
 
 public class MainActivity extends AppCompatActivity {
 
