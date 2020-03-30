@@ -27,7 +27,6 @@ public class PopupWindowActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onClick(View v) {
-        Toast.makeText(this,"点击",Toast.LENGTH_SHORT).show();
         View contentView = getLayoutInflater().inflate(R.layout.layout_popupwindow,null,false);
         PopupWindow popupWindow = new PopupWindow(contentView, WindowManager.LayoutParams.WRAP_CONTENT,WindowManager.LayoutParams.WRAP_CONTENT,true);
         //测量
@@ -43,7 +42,8 @@ public class PopupWindowActivity extends AppCompatActivity implements View.OnCli
         Log.e("xiaojun","button的y="+buttonPosition[1]);
         //计算popupWindow真正要显示的位置
         int offsetY = buttonPosition[1]-popupWindow.getContentView().getMeasuredHeight();
-
+        //-=================设置动画========================
+        popupWindow.setAnimationStyle(R.style.popwindow_animation);
         popupWindow.showAtLocation(v,Gravity.CENTER_HORIZONTAL|Gravity.TOP,0,offsetY);
 
     }
