@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,9 +19,9 @@ public class RecyclerViewTestActivity extends AppCompatActivity {
 
     private RecyclerView mRecyclerView;
     private RecyclerViewAdapter mAdapter;
-    private Button mBtn;
+    private Button mBtn,mBtnNotifydatasetchange,mBtnSwitchAdapter;
     private EditText mEdt;
-    private CustomLayoutManagerNew mLayoutManager;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,10 +29,28 @@ public class RecyclerViewTestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_recycler_view_test);
         mRecyclerView = findViewById(R.id.recyclerview);
         mBtn = findViewById(R.id.btn);
+        mBtnNotifydatasetchange = findViewById(R.id.btn2);
+        mBtnSwitchAdapter = findViewById(R.id.btnSwitch);
         mEdt = findViewById(R.id.edt_num);
         mBtn.setOnClickListener(v -> click());
         setLayoutManager();
         setRecyclerViewDatas();
+        Father son = new Son();
+        son.eat();
+    }
+
+    abstract class Father{
+        protected void eat(){
+            Log.e("xiaojun","father eat");
+        }
+    }
+
+    class Son extends Father{
+        @Override
+        protected void eat() {
+//            super.eat();
+            Log.e("xiaojun","son eat");
+        }
     }
 
     private void click() {
@@ -52,16 +71,30 @@ public class RecyclerViewTestActivity extends AppCompatActivity {
 //        CustomLayoutManagerForuth layoutManager = new CustomLayoutManagerForuth();
 //        CustomLayoutManagerFifth layoutManager = new CustomLayoutManagerFifth();
 //        LinearLayoutManager layoutManager = new LinearLayoutManager(this,RecyclerView.HORIZONTAL,false);
-        mLayoutManager = new CustomLayoutManagerNew();
+//        mLayoutManager = new CustomLayoutManagerNew();
+//        mLayoutManager = new CustomLayoutManagerNew();
+        mLayoutManager = new LayoutManagerFinal2();
         mRecyclerView.setLayoutManager(mLayoutManager);
     }
 
+    private List<String> mList;
+
     private List<String> getDatasForRecyclerView() {
-        List<String> list = new ArrayList<>();
+        mList = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
-            list.add(i + "");
+            mList.add(i + "");
         }
-        return list;
+        return mList;
 //        mAdapter = new RecyclerViewAdapter(list);
     }
+
+    public void notifyDataSetChange(View view){
+        mList.set(0,28+"");
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public void switchNewAdapter(View view){
+        setRecyclerViewDatas();
+    }
+
 }
