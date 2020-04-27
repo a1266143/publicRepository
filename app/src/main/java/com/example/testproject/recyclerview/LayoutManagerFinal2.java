@@ -7,8 +7,8 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
 
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
@@ -25,8 +25,11 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
     private int mTotalOffsetX;
     private ValueAnimator mAnimator;
     private RecyclerView.Recycler mRecycler;
+    private OnItemSelectedAdapter mListener;
     //当前屏幕的Rect
     private Rect mRectScreen = new Rect(0, 0, getRecyclerViewWidth(), getRecyclerViewHeight());
+
+
 
     //当前开始的位移量
     private int mStartOffsetX;
@@ -57,6 +60,17 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
         return new RecyclerView.LayoutParams(RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
     }
 
+    @Override
+    public void onAdapterChanged(@Nullable RecyclerView.Adapter oldAdapter, @Nullable RecyclerView.Adapter newAdapter) {
+        super.onAdapterChanged(oldAdapter, newAdapter);
+        //当设置新的Adapter后，可以移除所有View
+        //注意:
+        //removeAllViews调用之后会回调onLayoutChildren，并且屏幕上会没有View
+        // 因为remove了,所以onlayoutchildren的逻辑应该是:
+        //执行一个全新的布局操作
+        removeAllViews();
+    }
+
     /**
      * 1.初始化
      * 2.notifydatasetchange
@@ -81,7 +95,7 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
         int itemsLastCount = mItems.size();
 
         //---------------------------------------------测量-----------------------------------------------
-        //如果总Item数量和保存的Rect的数量相等，就不用测量，否则就测量
+        //如果这次是第一次初始化，或者NotifyDataSetChange或者setAdapter，需要重新测量所有item，更新总长度mTotalItemWidth,总长度会被用于计算滑动到边界判断
         if (getItemCount() != itemsLastCount) {
             mItems.clear();//清除之前保存的所有item
             View child = recycler.getViewForPosition(0);
@@ -107,26 +121,42 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
         //(1)需要判断 mPositionSelected 当前选中的View的Position是否大于 最新数据集 的最大index
         //(2)需要判断 mTotalOffsetX 当前位移的总距离是否 超过 最大可移动总距离
         if (getChildCount() != 0) {
-            int totalItemCount = getItemCount();
+            int totalItemCount = getItemCount();//当前新的Adapter中的数量
             //如果新的数据集的总数量 > 屏幕能容纳的最大子View数量
             if (totalItemCount >= getScreenViewMaxCount()) {
                 if (totalItemCount < itemsLastCount) {
                     //如果之前选中的位置已经超过了 最新 item 数量的最大index，
                     if (mPositionSelectedItem > totalItemCount - 1) {
                         mPositionSelectedItem = totalItemCount - 1;
-                        //移动到最右边能移动的最大距离
-                        mTotalOffsetX = mTotalItemWidth - getRecyclerViewWidth();
+                        //移动到最右边能移动的最大距离:需要加上初始偏移量
+                        mTotalOffsetX = mTotalItemWidth - getRecyclerViewWidth()+2*mStartOffsetX;
                     }
                 }
                 //如果 当前item总数量 和 之前保存的item的总数量相当或者 大于，mPositionSelectedItem和mTotalOffsetX就不用更改
+                else{
+
+                }
             }
             //如果新的数据集总量 < 屏幕能容纳的最大子View数量
             else {
-                //还原
-                //不能移动，默认选中第一个item
-                mTotalOffsetX = 0;
-                mPositionSelectedItem = 0;
+                //如果之前选中的位置已经超过了 最新 item 数量的最大index，
+                if (mPositionSelectedItem > totalItemCount - 1){
+                    mPositionSelectedItem = totalItemCount - 1;
+                    //移动到最右边能移动的最大距离:需要加上初始偏移量
+                    mTotalOffsetX = mTotalItemWidth - getRecyclerViewWidth()+2*mStartOffsetX;
+                }
+                /*else{
+                    //还原
+                    //不能移动，默认选中第一个item
+//                    mTotalOffsetX = 0;
+//                    mPositionSelectedItem = 0;
+                }*/
             }
+        }
+        //屏幕上没有View，执行崭新的重新布局View
+        else{
+            mTotalOffsetX = 0;
+            mPositionSelectedItem = 0;
         }
         //离屏缓存
         detachAndScrapAttachedViews(recycler);
@@ -150,6 +180,15 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
         getCurrentSelectedItemPosition();
     }
 
+    @Override
+    public void onScrollStateChanged(int state) {
+        super.onScrollStateChanged(state);
+        if (RecyclerView.SCROLL_STATE_IDLE==state){
+            //滑动结束后选中的Position:
+            Log.e("xiaojun","selected:"+mPositionSelectedItem);
+        }
+    }
+
     /**
      * 获取移动了{@link #mTotalOffsetX}距离的Rect
      *
@@ -170,7 +209,7 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
 
         mAnimator = ValueAnimator.ofFloat(mTotalOffsetX, mItems.get(position).left-mStartOffsetX);
         mAnimator.setDuration(500);
-        mAnimator.setInterpolator(new DecelerateInterpolator());
+        mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
 
         int direction = centerSeleceted<centerLineX?DIRECTION_LEFT_TO_RIGHT:DIRECTION_RIGHT_TO_LEFT;
         mAnimator.addUpdateListener(animation -> {
@@ -330,16 +369,47 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
         }
         int positionCenterReal = getPosition(getChildAt(positionCenter));
         mPositionSelectedItem = positionCenterReal;
+        Log.e("xiaojun","当前选中Position="+mPositionSelectedItem);
         return positionCenterReal;
     }
 
-    /*private int getSelectedPosition(){
-        if (getChildCount() == 0)
-            return -1;
-        //找出离中线最近的item
-        for (int i = 0; i < getChildCount(); i++) {
+    /**
+     * 设置被选中监听器
+     * @param listener
+     */
+    public void setOnItemSelectedListener(OnItemSelectedAdapter listener){
+        this.mListener = listener;
+    }
+
+    /**
+     * 回调适配器，用户可以按需实现某个功能
+     */
+    public abstract class OnItemSelectedAdapter{
+        /**
+         * 被选中，会返回状态
+         * @param position
+         * @param state_selected
+         */
+        void onItemSelected(int position,STATE_SELECTED state_selected){
 
         }
-    }*/
+
+        /**
+         * 最终被选中
+         * @param position
+         */
+        void onItemSelectedFinally(int position){
+
+        }
+    }
+
+    /**
+     * 选中状态
+     */
+    public enum STATE_SELECTED{
+        SCROLL_IDLE,//用户滑动导致的被选中回调
+        MANUAL_CLICK,//手动点击被选中回调
+        NOTIFY_AND_NEWADAPTER;//NotifyDataSetChange和重新设置Adapter导致的回调
+    }
 
 }
