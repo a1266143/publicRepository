@@ -1,5 +1,7 @@
 package com.example.testproject.recyclerview;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -28,7 +30,6 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
     private OnItemSelectedAdapter mListener;
     //当前屏幕的Rect
     private Rect mRectScreen = new Rect(0, 0, getRecyclerViewWidth(), getRecyclerViewHeight());
-
 
 
     //当前开始的位移量
@@ -129,21 +130,21 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
                     if (mPositionSelectedItem > totalItemCount - 1) {
                         mPositionSelectedItem = totalItemCount - 1;
                         //移动到最右边能移动的最大距离:需要加上初始偏移量
-                        mTotalOffsetX = mTotalItemWidth - getRecyclerViewWidth()+2*mStartOffsetX;
+                        mTotalOffsetX = mTotalItemWidth - getRecyclerViewWidth() + 2 * mStartOffsetX;
                     }
                 }
                 //如果 当前item总数量 和 之前保存的item的总数量相当或者 大于，mPositionSelectedItem和mTotalOffsetX就不用更改
-                else{
+                else {
 
                 }
             }
             //如果新的数据集总量 < 屏幕能容纳的最大子View数量
             else {
                 //如果之前选中的位置已经超过了 最新 item 数量的最大index，
-                if (mPositionSelectedItem > totalItemCount - 1){
+                if (mPositionSelectedItem > totalItemCount - 1) {
                     mPositionSelectedItem = totalItemCount - 1;
                     //移动到最右边能移动的最大距离:需要加上初始偏移量
-                    mTotalOffsetX = mTotalItemWidth - getRecyclerViewWidth()+2*mStartOffsetX;
+                    mTotalOffsetX = mTotalItemWidth - getRecyclerViewWidth() + 2 * mStartOffsetX;
                 }
                 /*else{
                     //还原
@@ -154,14 +155,17 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
             }
         }
         //屏幕上没有View，执行崭新的重新布局View
-        else{
+        else {
             mTotalOffsetX = 0;
             mPositionSelectedItem = 0;
         }
         //离屏缓存
         detachAndScrapAttachedViews(recycler);
         layoutChildren(recycler);
-
+        if (mListener != null) {
+            mListener.onItemPositionChange(mPositionSelectedItem, STATE.NOTIFY_AND_NEWADAPTER);
+            mListener.onItemPositionChangeFinally(mPositionSelectedItem, STATE.NOTIFY_AND_NEWADAPTER);
+        }
     }
 
     //布局应该显示在屏幕上的View，根据当前位移的距离
@@ -183,9 +187,12 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
     @Override
     public void onScrollStateChanged(int state) {
         super.onScrollStateChanged(state);
-        if (RecyclerView.SCROLL_STATE_IDLE==state){
+        if (RecyclerView.SCROLL_STATE_IDLE == state) {
             //滑动结束后选中的Position:
-            Log.e("xiaojun","selected:"+mPositionSelectedItem);
+            if (mListener != null) {
+                mListener.onItemPositionChange(mPositionSelectedItem, STATE.SCROLL_IDLE);
+                mListener.onItemPositionChangeFinally(mPositionSelectedItem, STATE.SCROLL_IDLE);
+            }
         }
     }
 
@@ -203,19 +210,31 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
         if (mAnimator != null && mAnimator.isRunning())
             mAnimator.cancel();
         Rect rectRecyclerView = getRecyclerViewRect();
-        int centerLineX = (rectRecyclerView.right-rectRecyclerView.left)/2+rectRecyclerView.left;
+        int centerLineX = (rectRecyclerView.right - rectRecyclerView.left) / 2 + rectRecyclerView.left;
         Rect rectSelected = mItems.get(position);
-        int centerSeleceted = (rectSelected.right-rectSelected.left)/2+rectSelected.left;
+        int centerSeleceted = (rectSelected.right - rectSelected.left) / 2 + rectSelected.left;
 
-        mAnimator = ValueAnimator.ofFloat(mTotalOffsetX, mItems.get(position).left-mStartOffsetX);
+        mAnimator = ValueAnimator.ofFloat(mTotalOffsetX, mItems.get(position).left - mStartOffsetX);
         mAnimator.setDuration(500);
         mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
 
-        int direction = centerSeleceted<centerLineX?DIRECTION_LEFT_TO_RIGHT:DIRECTION_RIGHT_TO_LEFT;
+        int direction = centerSeleceted < centerLineX ? DIRECTION_LEFT_TO_RIGHT : DIRECTION_RIGHT_TO_LEFT;
         mAnimator.addUpdateListener(animation -> {
             float value = (float) animation.getAnimatedValue();
             mTotalOffsetX = (int) value;
             recyclerAndLayoutViews(mRecycler, direction);
+            if (mListener != null)
+                mListener.onItemPositionChange(mPositionSelectedItem, STATE.MANUAL_CLICK);
+        });
+        mAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if (mListener != null) {
+                    mListener.onItemPositionChange(mPositionSelectedItem, STATE.MANUAL_CLICK);
+                    mListener.onItemPositionChangeFinally(mPositionSelectedItem, STATE.MANUAL_CLICK);
+                }
+            }
         });
         mAnimator.start();
     }
@@ -351,62 +370,61 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
         getCurrentSelectedItemPosition();
     }
 
-    private int getCurrentSelectedItemPosition(){
+    private int getCurrentSelectedItemPosition() {
         int positionCenter = 0;
         //冒泡排序找到最小值
         Rect rectRecyclerView = getRecyclerViewRect();
         //中线的x轴坐标
-        int xCenter = (rectRecyclerView.right-rectRecyclerView.left)/2+rectRecyclerView.left;
+        int xCenter = (rectRecyclerView.right - rectRecyclerView.left) / 2 + rectRecyclerView.left;
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             Rect rect = mItems.get(getPosition(child));
-            if (rect.left<=xCenter&&rect.right>xCenter){
+            if (rect.left <= xCenter && rect.right > xCenter) {
                 getChildAt(i).setBackgroundColor(Color.RED);
                 positionCenter = i;
-            }else{
+            } else {
                 getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
             }
         }
         int positionCenterReal = getPosition(getChildAt(positionCenter));
         mPositionSelectedItem = positionCenterReal;
-        Log.e("xiaojun","当前选中Position="+mPositionSelectedItem);
+        Log.e("xiaojun", "当前选中Position=" + mPositionSelectedItem);
         return positionCenterReal;
     }
 
     /**
      * 设置被选中监听器
+     *
      * @param listener
      */
-    public void setOnItemSelectedListener(OnItemSelectedAdapter listener){
+    public void setOnItemSelectedListener(OnItemSelectedAdapter listener) {
         this.mListener = listener;
     }
 
     /**
      * 回调适配器，用户可以按需实现某个功能
      */
-    public abstract class OnItemSelectedAdapter{
+    public static abstract class OnItemSelectedAdapter {
         /**
-         * 被选中，会返回状态
+         * 正在改变，会返回状态
+         *
          * @param position
          * @param state_selected
          */
-        void onItemSelected(int position,STATE_SELECTED state_selected){
-
-        }
+        void onItemPositionChange(int position, STATE state_selected) {}
 
         /**
          * 最终被选中
+         *
          * @param position
          */
-        void onItemSelectedFinally(int position){
-
-        }
+        void onItemPositionChangeFinally(int position, STATE state) {}
     }
 
     /**
      * 选中状态
      */
-    public enum STATE_SELECTED{
+    public enum STATE {
         SCROLL_IDLE,//用户滑动导致的被选中回调
         MANUAL_CLICK,//手动点击被选中回调
         NOTIFY_AND_NEWADAPTER;//NotifyDataSetChange和重新设置Adapter导致的回调
