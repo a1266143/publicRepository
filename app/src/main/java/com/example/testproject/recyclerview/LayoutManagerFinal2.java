@@ -43,6 +43,11 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
         return true;
     }
 
+    @Override
+    public boolean isAutoMeasureEnabled() {
+        return true;
+    }
+
     //获取屏幕上能容纳的最大子View个数
     private int getScreenViewMaxCount() {
         return (int) Math.ceil(1.f * getRecyclerViewWidth() / mWidth);
@@ -174,7 +179,7 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
         for (int i = 0; i < mItems.size(); i++) {
             Rect rect = mItems.get(i);
             //相交的child才显示出来
-            if (Rect.intersects(rectRecyclerView, rect)) {
+            if (intersectsWithLeftRight(rectRecyclerView, rect)) {
                 View child = recycler.getViewForPosition(i);
                 addView(child);
                 measureChild(child, 0, 0);
@@ -188,10 +193,15 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
     public void onScrollStateChanged(int state) {
         super.onScrollStateChanged(state);
         if (RecyclerView.SCROLL_STATE_IDLE == state) {
+            scrollToPositionCustom(mPositionSelectedItem);
             //滑动结束后选中的Position:
             if (mListener != null) {
                 mListener.onItemPositionChange(mPositionSelectedItem, STATE.SCROLL_IDLE);
                 mListener.onItemPositionChangeFinally(mPositionSelectedItem, STATE.SCROLL_IDLE);
+            }
+        }else if (RecyclerView.SCROLL_STATE_DRAGGING == state){
+            if (mAnimator!=null&&mAnimator.isRunning()){
+                mAnimator.cancel();
             }
         }
     }
@@ -289,7 +299,7 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
             for (int i = getChildCount() - 1; i >= 0; i--) {
                 View child = getChildAt(i);
                 Rect rect = mItems.get(getPosition(child));
-                if (!Rect.intersects(rect, rectRecyclerView)) {
+                if (!intersectsWithLeftRight(rect, rectRecyclerView)) {
 //                    Log.e("xiaojun", "xiaojun111:removeChildPosition=" + getPosition(child));
                     removeAndRecycleView(child, recycler);
                 } else {
@@ -301,7 +311,7 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
                 View child = getChildAt(i);
                 Rect rect = mItems.get(getPosition(child));
                 //如果移动过后的RecyclerView Rect不相交，就移除当前child
-                if (!Rect.intersects(rectRecyclerView, rect)) {
+                if (!intersectsWithLeftRight(rectRecyclerView, rect)) {
 //                    Log.e("xiaojun", "xiaojun111:removeChildPosition=" + getPosition(child));
                     removeAndRecycleView(child, recycler);
                 } else {
@@ -332,7 +342,7 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
             }*/
             for (int i = positionLast + 1; i < getItemCount(); i++) {
                 Rect rect = mItems.get(i);
-                if (Rect.intersects(rectRecyclerView, rect)) {
+                if (intersectsWithLeftRight(rectRecyclerView, rect)) {
 //                    Log.e("xiaojun","xiaojun111:addView:"+i);
                     View child = recycler.getViewForPosition(i);
                     measureChild(child, 0, 0);
@@ -356,7 +366,7 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
 
             for (int i = positionFirst - 1; i >= 0; i--) {
                 Rect rect = mItems.get(i);
-                if (Rect.intersects(rectRecyclerView, rect)) {
+                if (intersectsWithLeftRight(rectRecyclerView, rect)) {
 //                    Log.e("xiaojun","xiaojun111:addView:"+i);
                     View child = recycler.getViewForPosition(i);
                     measureChild(child, 0, 0);
@@ -409,16 +419,26 @@ public class LayoutManagerFinal2 extends RecyclerView.LayoutManager {
          * 正在改变，会返回状态
          *
          * @param position
-         * @param state_selected
+         * @param state
          */
-        void onItemPositionChange(int position, STATE state_selected) {}
+        public void onItemPositionChange(int position, STATE state) {}
 
         /**
          * 最终被选中
          *
          * @param position
          */
-        void onItemPositionChangeFinally(int position, STATE state) {}
+        public void onItemPositionChangeFinally(int position, STATE state) {}
+    }
+
+    /**
+     * 判断两个矩形是否左右相交
+     * @param a
+     * @param b
+     * @return
+     */
+    private boolean intersectsWithLeftRight(Rect a, Rect b) {
+        return a.left < b.right && b.left < a.right;
     }
 
     /**
